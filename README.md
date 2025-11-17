@@ -166,7 +166,7 @@ python3 fair_monte_carlo.py
 
 ## 📧 Questions?
 
-Refer to the comprehensive guide: `FAIR_Monte_Carlo_Guide.md`
+Refer to the comprehensive guide: [FAIR_Monte_Carlo_Guide.md](FAIR_Monte_Carlo_Guide.md)
 
 ---
 
