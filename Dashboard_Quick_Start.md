@@ -33,6 +33,7 @@ source venv/bin/activate  # Mac/Linux
 
 venv\Scripts\activate     # Windows
 ```
+Repeat Step 1 and 2
 
 That's it! Your browser will automatically open to the dashboard at `http://localhost:8501`
 
