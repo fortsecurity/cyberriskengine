@@ -255,7 +255,7 @@ numpy, pandas, matplotlib, scipy, streamlit, plotly
 
 ---
 
-## 💼 Recommended Setup for BARE Cybersecurity
+## 💼 Recommended Setup
 
 ### Your Laptop
 - Both tools installed
@@ -380,7 +380,7 @@ Both tools use the **exact same simulation engine** (fair_monte_carlo.py). The o
 
 Use whichever fits your current task!
 
-Most BARE consultants will use:
+Most consultants will use:
 - **80% Dashboard** (client-facing work)
 - **20% Command-Line** (internal analysis, automation)
 
