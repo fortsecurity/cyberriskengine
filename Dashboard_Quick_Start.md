@@ -15,7 +15,7 @@ A beautiful, **web-based interactive dashboard** that runs in your browser! Perf
 You need to install Streamlit and Plotly (on top of the packages you already have):
 
 ```bash
-pip3 install streamlit plotly matplotlib
+pip3 install streamlit plotly
 ```
 
 ### Step 2: Launch the Dashboard
