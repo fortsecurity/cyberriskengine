@@ -1,8 +1,10 @@
 # FAIR Monte Carlo Risk Analysis - Quick Start
 
-## ✅ Fixed Issues
+## Fixed Issues
 - ✅ UTF-8 encoding added (fixes euro symbol errors)
 - ✅ requirements.txt included
+- ✅ added statistics docs and faq
+ 
 
 ## 📦 Installation
 
