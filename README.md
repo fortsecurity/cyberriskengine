@@ -1,177 +1,196 @@
-# FAIR Monte Carlo Risk Analysis - Quick Start
+# FAIR Risk Analysis Dashboard
 
-## Fixed Issues
-- ✅ UTF-8 encoding added (fixes euro symbol errors)
-- ✅ requirements.txt included
-- ✅ added statistics docs and faq
- 
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit](https://img.shields.io/badge/streamlit-1.28+-red.svg)](https://streamlit.io)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## 📦 Installation
+A professional, web-based tool for conducting quantitative cybersecurity risk assessments using the FAIR (Factor Analysis of Information Risk) methodology.
 
-### 1. Make sure you have Python 3.7+
+![Dashboard Preview](docs/images/dashboard-preview.png)
+
+## ✨ Key Features
+
+- 🎯 **Interactive Monte Carlo Simulation** - Run 1,000 to 50,000 simulations for statistical rigor
+- 🌍 **External vs Internal Factor Grouping** - Clear visual distinction between controllable and uncontrollable risk factors
+- 💡 **Comprehensive Help System** - 35+ in-context tooltips with FAIR-aligned definitions
+- 📊 **Rich Visualizations** - Interactive charts with distribution, exceedance curves, percentiles, and LEF analysis
+- 🎨 **Preset Scenarios** - Pre-configured risk scenarios for common threats (Ransomware, Data Breach, BEC, DDoS, Insider Threat)
+- 💰 **ROI Calculators** - Built-in ROSI analysis and insurance recommendation tools
+- 📥 **Multiple Export Formats** - JSON, CSV, and formatted text reports
+- 🎓 **Educational Design** - UI teaches FAIR principles through its structure
+
+## 🚀 Quick Start
+
+### Installation
 
 ```bash
-python3 --version
+# Clone the repository
+git clone https://github.com/yourusername/fair-risk-dashboard.git
+cd fair-risk-dashboard
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Launch the dashboard
+streamlit run fair_dashboard.py
 ```
 
-### 2. Install dependencies
+The dashboard will automatically open in your browser at `http://localhost:8501`
 
-```bash
-pip3 install -r requirements.txt
-```
+### First Use
 
-### 3. Run the example
+1. Load a preset scenario (e.g., "Ransomware Attack")
+2. Click the (?) help icons to learn FAIR terminology
+3. Adjust parameters to match your organization
+4. Click "Run Simulation"
+5. Explore the four visualization tabs
+6. Export your results
 
-```bash
-python3 fair_monte_carlo.py
-```
+## 📊 Understanding the Interface
 
-Or if that doesn't work:
-Try run it in a virtual environment:
-```bash
-python3 -m venv venv
-source venv/bin/activate  # Mac/Linux
-# or
+### External vs Internal Factors
 
-venv\Scripts\activate     # Windows
-```
+The dashboard clearly distinguishes between factors you can and cannot control:
 
-That's it! You should see results printed and files generated.
+**🌍 External Factors (Threat Landscape)**
+- **Contact Frequency** - Industry-wide threat volume (you can't control)
 
-## 📁 What You Get
+**🏢 Internal Factors (Your Organization)**
+- **Threat Event Frequency & Probability of Action** - Your attractiveness as a target (partially controllable)
+- **Vulnerability** - Your security control effectiveness (directly controllable)
+- **Loss Magnitudes** - Your specific costs and exposure (partially controllable)
 
-After running, you'll have:
-- **PNG file**: Risk analysis visualization (4 charts)
-- **CSV file**: Raw simulation data (10,000 rows)
-- **JSON file**: Summary statistics
-
-## 🎯 Create Your Own Analysis
-
-### Option 1: Use the Template
-
-Edit `custom_scenario_template.py` and change these sections:
-- Lines 28-33: Client information
-- Lines 42-49: Threat Event Frequency
-- Lines 64-79: Vulnerability calculation
-- Lines 98-107: Primary losses
-- Lines 130-142: Secondary losses
-
-Then run:
-```bash
-python3 custom_scenario_template.py
-```
-
-### Option 2: Write Your Own Script
-
-Create a file called `my_analysis.py`:
-
-```python
-# -*- coding: utf-8 -*-
-from fair_monte_carlo import FAIRMonteCarloSimulation, FAIRDistribution
-
-# Create simulation
-sim = FAIRMonteCarloSimulation(n_simulations=10000)
-
-# Define threat frequency (attempts per year)
-tef = FAIRDistribution(
-    dist_type='pert',
-    min_val=100,
-    mode_val=500,
-    max_val=2000
-)
-
-# Define vulnerability (probability of success: 0-1)
-vulnerability = 0.015  # 1.5%
-
-# Define primary loss (direct costs in euros)
-primary_loss = FAIRDistribution(
-    dist_type='lognormal',
-    min_val=20000,
-    mode_val=80000,
-    max_val=300000
-)
-
-# Define secondary loss (indirect costs)
-secondary_loss = FAIRDistribution(
-    dist_type='lognormal',
-    min_val=10000,
-    mode_val=50000,
-    max_val=200000
-)
-
-# Run simulation
-stats = sim.run_simulation(
-    tef_dist=tef,
-    vuln_prob=vulnerability,
-    primary_loss_dist=primary_loss,
-    secondary_loss_dist=secondary_loss,
-    secondary_loss_prob=0.4  # 40% chance of secondary losses
-)
-
-# Display results
-sim.print_results(stats, currency="€")
-
-# Generate visualization
-sim.plot_results(stats, currency="€", save_path="my_risk_analysis.png")
-
-# Export data
-sim.export_results(stats, "My Risk Scenario", "my_results.csv")
-```
-
-Run it:
-```bash
-python3 my_analysis.py
-```
+This distinction is fundamental to making smart security investment decisions.
 
 ## 📚 Documentation
 
-- **FAIR_Monte_Carlo_Guide.md**: Complete methodology guide
-- **FAIR_Parameter_Reference.md**: Industry benchmarks and ready-to-use values
+- **[Getting Started Guide](docs/README_ENHANCED.md)** - Complete user guide with tutorials
+- **[FAIR Quick Reference](docs/FAIR_QUICK_REFERENCE.md)** - Essential FAIR terminology and concepts
+- **[UI Reorganization Guide](docs/UI_REORGANIZATION_GUIDE.md)** - Understanding external vs internal factors
+- **[Help Text Reference](docs/HELP_TEXT_SUMMARY.md)** - Complete catalog of all tooltips
+- **[Changelog](CHANGELOG.md)** - Version history and updates
 
-## 🔧 Troubleshooting
+## 🎓 FAIR Methodology
 
-**"No module named 'numpy'"**
-```bash
-pip3 install numpy pandas matplotlib scipy
+This tool implements the FAIR (Factor Analysis of Information Risk) standard for quantitative risk analysis:
+
+```
+Risk = Loss Event Frequency × Loss Magnitude
+
+Where:
+  LEF = Threat Event Frequency × Vulnerability
+  TEF = Contact Frequency × Probability of Action
+  LM = Primary Loss + Secondary Loss (when applicable)
 ```
 
-**"Permission denied"**
+**Learn More:**
+- [FAIR Institute](https://www.fairinstitute.org/)
+- ["Measuring and Managing Information Risk" by Jack A. Jones](https://www.fairinstitute.org/fair-risk-book)
+
+## 💡 Use Cases
+
+### For Security Analysts
+- Quantify cyber risk in financial terms
+- Compare different risk scenarios
+- Justify security investments with ROSI calculations
+- Track risk reduction over time
+
+### For Consultants
+- Professional client presentations
+- Standardized risk assessment methodology
+- Clear communication of complex risk concepts
+- Generate client-ready reports
+
+### For Executives
+- Understand risk in business terms (% of revenue)
+- Make informed risk acceptance decisions
+- Evaluate security investment proposals
+- Set realistic risk appetite thresholds
+
+## 🛠️ Technical Stack
+
+- **Framework:** Streamlit (Python web framework)
+- **Simulation:** NumPy (Monte Carlo engine)
+- **Visualization:** Plotly (interactive charts)
+- **Data Export:** Pandas (CSV/JSON export)
+- **Distributions:** PERT, Lognormal, Normal, Uniform
+
+## 📈 Version History
+
+### Version 1.2 (Current) - UI Reorganization
+- ✨ Visual grouping of external vs internal factors
+- 🎨 Bordered containers for clear section separation
+- 📚 Enhanced help text with controllability indicators
+- 📖 New UI Reorganization Guide
+
+### Version 1.1 - Complete Help Text
+- 💡 35 comprehensive help tooltips (100% coverage)
+- 📝 FAIR-aligned definitions with examples
+- 🎓 Self-service learning capability
+
+### Version 1.0 - Initial Release
+- 🎯 Core FAIR risk assessment functionality
+- 📊 Monte Carlo simulation engine
+- 📈 Interactive visualizations
+- 📥 Export capabilities
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+### Development Setup
+
 ```bash
-pip3 install --user numpy pandas matplotlib scipy
+# Clone and setup
+git clone https://github.com/yourusername/fair-risk-dashboard.git
+cd fair-risk-dashboard
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements-dev.txt
+
+# Run tests
+pytest tests/
+
+# Run with hot reload
+streamlit run fair_dashboard.py --logger.level=debug
 ```
 
-**Still having issues?**
-Try creating a virtual environment:
-```bash
-python3 -m venv venv
-source venv/bin/activate  # Mac/Linux
-# or
-venv\Scripts\activate     # Windows
+### Guidelines
+- Follow PEP 8 style guidelines
+- Maintain FAIR methodology alignment
+- Update help text for new features
+- Add tests for new functionality
+- Update documentation
 
-pip install -r requirements.txt
-python3 fair_monte_carlo.py
-```
+## 📄 License
 
-## 💡 Pro Tips
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-1. **Start with the example**: Run `fair_monte_carlo.py` first to see how it works
-2. **Use the reference guide**: `FAIR_Parameter_Reference.md` has pre-calculated values for common scenarios
-3. **Iterate**: Run multiple scenarios (before/after controls) to show ROI
-4. **Export for clients**: The PNG charts are ready for PowerPoint/Google Slides
+## 🙏 Acknowledgments
 
-## 🎓 Understanding the Outputs
+- **FAIR Institute** - For the FAIR methodology and standard definitions
+- **Jack A. Jones** - Creator of the FAIR framework
+- **BARE Cybersecurity** - Project sponsor and primary use case
 
-- **Mean ALE**: Average expected annual loss (use for budgeting)
-- **Median ALE**: Typical loss year (often lower than mean)
-- **95th Percentile**: Use for "worst case" planning and insurance coverage
-- **Loss Event Frequency**: Expected number of incidents per year
+## 📞 Support
 
-## 📧 Questions?
+- **Documentation:** See [docs/](docs/) directory
+- **Issues:** [GitHub Issues](https://github.com/yourusername/fair-risk-dashboard/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/yourusername/fair-risk-dashboard/discussions)
+- **FAIR Resources:** [fairinstitute.org](https://www.fairinstitute.org/)
 
-Refer to the comprehensive guide: [FAIR_Monte_Carlo_Guide.md](FAIR_Monte_Carlo_Guide.md)
+## 🌟 Star History
+
+If you find this tool useful, please consider starring the repository!
 
 ---
 
-**Version**: 1.0  
-**For**: BARE Cybersecurity vCISO engagements  
-**Created**: November 2025
+**Built with ❤️ for the cybersecurity community**
+
+*Making quantitative risk analysis accessible to everyone*

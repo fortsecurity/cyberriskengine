@@ -70,19 +70,34 @@ with st.sidebar:
     scenario_preset = st.selectbox(
         "📋 Load Preset Scenario",
         ["Custom", "Ransomware Attack", "Data Breach (GDPR)", "Business Email Compromise", 
-         "DDoS Attack", "Insider Threat"]
+         "DDoS Attack", "Insider Threat"],
+        help="Load pre-configured risk scenarios based on common cybersecurity threats. Select 'Custom' to define your own parameters."
     )
     
     st.markdown("---")
     
     # Client information
     st.subheader("👤 Client Information")
-    client_name = st.text_input("Client Name", value="Example Company")
-    annual_revenue = st.number_input("Annual Revenue (€)", min_value=100000, max_value=1000000000, 
-                                    value=5000000, step=100000, format="%d")
-    industry = st.selectbox("Industry", 
-                           ["Professional Services", "Financial Services", "Healthcare", 
-                            "E-commerce", "Manufacturing", "Technology", "Other"])
+    client_name = st.text_input(
+        "Client Name", 
+        value="Example Company",
+        help="The name of the organization being assessed. Used for report generation and documentation."
+    )
+    annual_revenue = st.number_input(
+        "Annual Revenue (€)", 
+        min_value=100000, 
+        max_value=1000000000, 
+        value=5000000, 
+        step=100000, 
+        format="%d",
+        help="Total annual revenue of the organization. Used to calculate risk as a percentage of revenue and determine risk appetite thresholds."
+    )
+    industry = st.selectbox(
+        "Industry", 
+        ["Professional Services", "Financial Services", "Healthcare", 
+         "E-commerce", "Manufacturing", "Technology", "Other"],
+        help="Industry sector of the organization. Helps contextualize risk tolerance and provides industry-specific risk benchmarking."
+    )
     
     st.markdown("---")
     
@@ -91,13 +106,28 @@ with st.sidebar:
     n_simulations = st.select_slider(
         "Number of Simulations",
         options=[1000, 5000, 10000, 20000, 50000],
-        value=10000
+        value=10000,
+        help="Number of Monte Carlo iterations to run. Higher values provide more accurate results but take longer to compute. 10,000 simulations typically provide a good balance of accuracy and speed."
     )
     
-    currency = st.selectbox("Currency", ["€", "$", "£", "CHF"], index=0)
+    currency = st.selectbox(
+        "Currency", 
+        ["€", "$", "£", "CHF"], 
+        index=0,
+        help="Currency symbol for displaying financial values in reports and visualizations."
+    )
 
 # Load preset values
 def load_preset(scenario):
+    """
+    Load pre-configured risk scenario parameters for common cybersecurity threats.
+    
+    Args:
+        scenario (str): Name of the threat scenario
+        
+    Returns:
+        dict: Dictionary containing TEF, vulnerability, and loss magnitude parameters
+    """
     presets = {
         "Ransomware Attack": {
             "tef_min": 100, "tef_mode": 300, "tef_max": 1000,
@@ -148,103 +178,180 @@ preset_values = load_preset(scenario_preset if scenario_preset != "Custom" else 
 # Main content area - Parameters
 st.header("📊 Risk Scenario Parameters")
 
+# Add informational box explaining the grouping
+st.info("💡 **FAIR factors are grouped by source:** 🌍 **External factors** depend on the threat landscape. 🏢 **Internal factors** depend on your organization's posture and costs.")
+
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🎯 Threat Event Frequency (TEF)")
-    st.markdown("*How many times per year does this threat occur?*")
-    
-    tef_min = st.number_input(
-        "Minimum attempts/year",
-        min_value=1, max_value=100000, value=preset_values["tef_min"], step=10
-    )
-    tef_mode = st.number_input(
-        "Most likely attempts/year",
-        min_value=1, max_value=100000, value=preset_values["tef_mode"], step=10
-    )
-    tef_max = st.number_input(
-        "Maximum attempts/year",
-        min_value=1, max_value=100000, value=preset_values["tef_max"], step=10
-    )
+    # EXTERNAL FACTORS (THREAT LANDSCAPE)
+    st.markdown("### 🌍 External Factors (Threat Landscape)")
+    with st.container(border=True):
+        st.markdown("**🎯 Contact Frequency**")
+        st.caption("Industry-wide threat activity - NOT organization-specific")
+        
+        vuln_contact = st.slider(
+            "Contact Frequency (%)",
+            min_value=0.0, 
+            max_value=100.0, 
+            value=preset_values["vuln_contact"]*100, 
+            step=1.0,
+            help="Contact Frequency (CF): The probable frequency that a threat agent will come into contact with your asset or organization's perimeter. This is typically based on industry-wide data (e.g., volume of phishing emails, automated scans). This is EXTERNAL - based on threat actor activity, not your organization."
+        ) / 100
+        
+        st.caption(f"📊 Industry benchmark: {vuln_contact*100:.1f}% contact rate")
     
     st.markdown("---")
     
-    st.subheader("🔓 Vulnerability")
-    st.markdown("*What's the probability a threat succeeds?*")
+    # INTERNAL FACTORS (YOUR ORGANIZATION)
+    st.markdown("### 🏢 Internal Factors (Your Organization)")
     
-    vuln_contact = st.slider(
-        "Contact Frequency (%)",
-        min_value=0.0, max_value=100.0, value=preset_values["vuln_contact"]*100, step=1.0,
-        help="% of threats that reach your assets"
-    ) / 100
+    with st.container(border=True):
+        st.markdown("**🎯 Threat Event Frequency (TEF)**")
+        st.caption("How many times per year are YOU specifically targeted?")
+        
+        col_tef1, col_tef2 = st.columns(2)
+        with col_tef1:
+            tef_min = st.number_input(
+                "Minimum attempts/year",
+                min_value=1, 
+                max_value=100000, 
+                value=preset_values["tef_min"], 
+                step=10,
+                help="The minimum probable frequency that this asset will be subjected to threat agent actions (attempted attacks) per year. TEF represents organization-specific threat events, not general threat activity."
+            )
+            tef_mode = st.number_input(
+                "Most likely attempts/year",
+                min_value=1, 
+                max_value=100000, 
+                value=preset_values["tef_mode"], 
+                step=10,
+                help="The most likely (mode) frequency of threat events per year. This is the peak of your probability distribution and represents your best estimate of typical threat frequency."
+            )
+        with col_tef2:
+            tef_max = st.number_input(
+                "Maximum attempts/year",
+                min_value=1, 
+                max_value=100000, 
+                value=preset_values["tef_max"], 
+                step=10,
+                help="The maximum probable frequency of threat events per year in a worst-case scenario. This represents the upper bound of your uncertainty range."
+            )
+            st.markdown("")  # Spacing
+            vuln_action = st.slider(
+                "Probability of Action (%)",
+                min_value=0.0, 
+                max_value=100.0, 
+                value=preset_values["vuln_action"]*100, 
+                step=1.0,
+                help="Probability of Action (PoA): The probable frequency that, once contact occurs, the threat agent will act upon the asset to cause a threat event. This is organization-specific and reflects the asset's value and the threat agent's motivation. PoA is the crucial factor that scales industry data (CF) to your specific threat events (TEF).",
+                key="poa_slider"
+            ) / 100
+        
+        st.caption(f"📈 TEF = CF × PoA = {vuln_contact*100:.1f}% × {vuln_action*100:.1f}% (Your specific threat level)")
     
-    vuln_action = st.slider(
-        "Probability of Action (%)",
-        min_value=0.0, max_value=100.0, value=preset_values["vuln_action"]*100, step=1.0,
-        help="% of reached threats that are acted upon"
-    ) / 100
-    
-    vuln_rate = st.slider(
-        "Vulnerability Rate (%)",
-        min_value=0.0, max_value=100.0, value=preset_values["vuln_rate"]*100, step=1.0,
-        help="% that succeed when acted upon"
-    ) / 100
-    
-    total_vulnerability = vuln_contact * vuln_action * vuln_rate
-    
-    st.metric(
-        "**Total Vulnerability**",
-        f"{total_vulnerability*100:.3f}%",
-        help="Contact × Action × Vulnerability"
-    )
-    
-    expected_lef = tef_mode * total_vulnerability
-    st.metric(
-        "**Expected Loss Events/Year**",
-        f"{expected_lef:.2f}",
-        help="TEF × Vulnerability"
-    )
+    with st.container(border=True):
+        st.markdown("**🔓 Vulnerability (Your Controls)**")
+        st.caption("How effective are YOUR security controls?")
+        
+        vuln_rate = st.slider(
+            "Vulnerability Rate (%)",
+            min_value=0.0, 
+            max_value=100.0, 
+            value=preset_values["vuln_rate"]*100, 
+            step=1.0,
+            help="Vulnerability: The probability that a threat event will result in a loss event. This is the ratio of Threat Capability to Resistance Strength (control effectiveness). Essentially the inverse of your security controls' effectiveness. This is INTERNAL - depends on YOUR security posture."
+        ) / 100
+        
+        total_vulnerability = vuln_contact * vuln_action * vuln_rate
+        
+        col_v1, col_v2 = st.columns(2)
+        with col_v1:
+            st.metric(
+                "Total Vulnerability",
+                f"{total_vulnerability*100:.3f}%",
+                help="The combined probability that a threat event will result in a loss event, calculated as Contact × Action × Vulnerability. This represents the overall likelihood of successful attacks."
+            )
+        with col_v2:
+            expected_lef = tef_mode * total_vulnerability
+            st.metric(
+                "Expected Loss Events/Year",
+                f"{expected_lef:.2f}",
+                help="Loss Event Frequency (LEF): The probable frequency that loss events of this type will occur per year. Calculated as TEF × Vulnerability. This is the number of successful attacks you can expect annually."
+            )
 
 with col2:
-    st.subheader("💰 Primary Loss Magnitude")
-    st.markdown("*Direct costs when incident occurs (€)*")
+    st.markdown("### 🏢 Internal Factors (Your Organization)")
     
-    primary_min = st.number_input(
-        "Minimum primary loss",
-        min_value=100, max_value=10000000, value=preset_values["primary_min"], step=1000
-    )
-    primary_mode = st.number_input(
-        "Most likely primary loss",
-        min_value=100, max_value=10000000, value=preset_values["primary_mode"], step=1000
-    )
-    primary_max = st.number_input(
-        "Maximum primary loss",
-        min_value=100, max_value=10000000, value=preset_values["primary_max"], step=1000
-    )
+    with st.container(border=True):
+        st.markdown("**💰 Primary Loss Magnitude**")
+        st.caption("Direct costs when incident occurs - YOUR organization's costs")
+    with st.container(border=True):
+        st.markdown("**💰 Primary Loss Magnitude**")
+        st.caption("Direct costs when incident occurs - YOUR organization's costs")
+        
+        primary_min = st.number_input(
+            "Minimum primary loss",
+            min_value=100, 
+            max_value=10000000, 
+            value=preset_values["primary_min"], 
+            step=1000,
+            help="Primary Loss: The minimum direct loss associated with the initial impact of the loss event (e.g., cost to replace hardware, direct ransom payment, immediate response costs). This is INTERNAL - based on YOUR organization's costs and assets."
+        )
+        primary_mode = st.number_input(
+            "Most likely primary loss",
+            min_value=100, 
+            max_value=10000000, 
+            value=preset_values["primary_mode"], 
+            step=1000,
+            help="The most likely (mode) value for primary losses. This represents your best estimate of typical direct costs when an incident occurs."
+        )
+        primary_max = st.number_input(
+            "Maximum primary loss",
+            min_value=100, 
+            max_value=10000000, 
+            value=preset_values["primary_max"], 
+            step=1000,
+            help="The maximum probable primary loss in a worst-case scenario. This represents the upper bound of direct costs you could face from a single incident."
+        )
     
-    st.markdown("---")
-    
-    st.subheader("📉 Secondary Loss Magnitude")
-    st.markdown("*Indirect costs (fines, reputation, etc.) (€)*")
-    
-    secondary_min = st.number_input(
-        "Minimum secondary loss",
-        min_value=0, max_value=10000000, value=preset_values["secondary_min"], step=1000
-    )
-    secondary_mode = st.number_input(
-        "Most likely secondary loss",
-        min_value=0, max_value=10000000, value=preset_values["secondary_mode"], step=1000
-    )
-    secondary_max = st.number_input(
-        "Maximum secondary loss",
-        min_value=0, max_value=10000000, value=preset_values["secondary_max"], step=1000
-    )
-    
-    secondary_prob = st.slider(
-        "Probability of Secondary Losses (%)",
-        min_value=0.0, max_value=100.0, value=preset_values["secondary_prob"]*100, step=5.0,
-        help="% of incidents that have secondary losses"
-    ) / 100
+    with st.container(border=True):
+        st.markdown("**📉 Secondary Loss Magnitude**")
+        st.caption("Indirect costs (fines, reputation, etc.) - YOUR organization's exposure")
+        
+        secondary_min = st.number_input(
+            "Minimum secondary loss",
+            min_value=0, 
+            max_value=10000000, 
+            value=preset_values["secondary_min"], 
+            step=1000,
+            help="Secondary Loss: The minimum indirect losses that occur after the primary event, typically from organizational response and external pressures (e.g., regulatory fines, lawsuits, reputational damage, remediation costs). This is INTERNAL - based on YOUR regulatory environment and reputation value."
+        )
+        secondary_mode = st.number_input(
+            "Most likely secondary loss",
+            min_value=0, 
+            max_value=10000000, 
+            value=preset_values["secondary_mode"], 
+            step=1000,
+            help="The most likely (mode) value for secondary losses. This represents your best estimate of typical indirect costs following an incident."
+        )
+        secondary_max = st.number_input(
+            "Maximum secondary loss",
+            min_value=0, 
+            max_value=10000000, 
+            value=preset_values["secondary_max"], 
+            step=1000,
+            help="The maximum probable secondary loss in a worst-case scenario. This represents the upper bound of indirect costs, including worst-case regulatory penalties and reputational damage."
+        )
+        
+        secondary_prob = st.slider(
+            "Probability of Secondary Losses (%)",
+            min_value=0.0, 
+            max_value=100.0, 
+            value=preset_values["secondary_prob"]*100, 
+            step=5.0,
+            help="Secondary Loss Event Frequency: The probable frequency that the primary event will lead to a specific secondary loss event. For example, the probability that a data breach will result in regulatory fines or lawsuits. This is INTERNAL - depends on YOUR regulatory environment and incident response capabilities."
+        ) / 100
 
 # Run Simulation Button
 st.markdown("---")
@@ -311,28 +418,28 @@ if st.session_state.simulation_run and st.session_state.stats:
             "Mean ALE",
             f"{currency}{stats['ale_mean']:,.0f}",
             delta=f"{(stats['ale_mean']/annual_revenue)*100:.2f}% of revenue",
-            help="Annual Loss Expectancy - Average expected loss per year"
+            help="Annual Loss Expectancy (ALE): The mean (average) expected loss per year from this risk scenario. This is calculated as the frequency of loss events multiplied by the magnitude of losses."
         )
     
     with col2:
         st.metric(
             "Median ALE",
             f"{currency}{stats['ale_median']:,.0f}",
-            help="Middle value - typical loss year"
+            help="The median (middle value) of the annual loss distribution. This represents a typical loss year and is often more representative than the mean for skewed distributions."
         )
     
     with col3:
         st.metric(
             "95th Percentile",
             f"{currency}{stats['percentiles']['95th']:,.0f}",
-            help="Worst case scenario (95% confidence)"
+            help="The loss value that will be exceeded only 5% of the time. This represents a worst-case scenario with 95% confidence and is commonly used for insurance coverage decisions."
         )
     
     with col4:
         st.metric(
             "Loss Event Frequency",
             f"{stats['lef_mean']:.2f}/year",
-            help="Expected number of loss events per year"
+            help="Loss Event Frequency (LEF): The expected number of successful loss events per year. This is calculated from Threat Event Frequency multiplied by Vulnerability."
         )
     
     # Risk appetite indicator
@@ -504,7 +611,8 @@ if st.session_state.simulation_run and st.session_state.stats:
         
         st.metric(
             "Probability of at least one loss event",
-            f"{stats['probability_of_loss']*100:.1f}%"
+            f"{stats['probability_of_loss']*100:.1f}%",
+            help="The probability that at least one successful loss event will occur during the year."
         )
     
     st.markdown("---")
@@ -520,21 +628,41 @@ if st.session_state.simulation_run and st.session_state.stats:
         # Control scenarios
         control_reduction = st.slider(
             "Estimated Risk Reduction from Controls (%)",
-            min_value=0, max_value=95, value=70, step=5
+            min_value=0, 
+            max_value=95, 
+            value=70, 
+            step=5,
+            help="The expected percentage reduction in Annual Loss Expectancy from implementing security controls. This should be based on the control's effectiveness in reducing either Threat Event Frequency or Vulnerability."
         )
         
         control_cost = st.number_input(
             f"Annual Control Cost ({currency})",
-            min_value=0, max_value=1000000, value=25000, step=1000
+            min_value=0, 
+            max_value=1000000, 
+            value=25000, 
+            step=1000,
+            help="The total annual cost of implementing and maintaining the security control, including licensing, personnel, and operational costs."
         )
         
         ale_reduction = stats['ale_mean'] * (control_reduction / 100)
         net_benefit = ale_reduction - control_cost
         rosi = (net_benefit / control_cost * 100) if control_cost > 0 else 0
         
-        st.metric("ALE Reduction", f"{currency}{ale_reduction:,.0f}")
-        st.metric("Net Benefit", f"{currency}{net_benefit:,.0f}")
-        st.metric("ROSI", f"{rosi:.0f}%")
+        st.metric(
+            "ALE Reduction", 
+            f"{currency}{ale_reduction:,.0f}",
+            help="The expected annual reduction in losses from implementing this control."
+        )
+        st.metric(
+            "Net Benefit", 
+            f"{currency}{net_benefit:,.0f}",
+            help="The net annual benefit after subtracting control costs from the ALE reduction (ALE Reduction - Control Cost)."
+        )
+        st.metric(
+            "ROSI", 
+            f"{rosi:.0f}%",
+            help="Return on Security Investment: The percentage return on the control investment. Calculated as (Net Benefit / Control Cost) × 100. Values >100% indicate strong financial justification."
+        )
         
         if rosi > 100:
             st.success(f"✅ **Excellent Investment**: ROSI of {rosi:.0f}% indicates strong value.")
@@ -560,6 +688,8 @@ if st.session_state.simulation_run and st.session_state.stats:
         
         st.write(f"\n**Estimated Annual Premium:** {currency}{premium_low:,.0f} - {currency}{premium_high:,.0f}")
         st.caption("(Typically 3-5% of coverage amount for SMBs)")
+        
+        st.info("💡 **Tip**: Coverage should be set at the 95th percentile to protect against worst-case scenarios while keeping premiums reasonable. The deductible should align with your risk appetite and the median expected loss.")
     
     st.markdown("---")
     
@@ -591,7 +721,8 @@ if st.session_state.simulation_run and st.session_state.stats:
             label="📄 Download JSON",
             data=json_str,
             file_name=f"{client_name.replace(' ', '_')}_fair_analysis.json",
-            mime="application/json"
+            mime="application/json",
+            help="Export complete analysis results in JSON format for further processing or integration with other tools."
         )
     
     with col2:
@@ -608,7 +739,8 @@ if st.session_state.simulation_run and st.session_state.stats:
             label="📊 Download CSV",
             data=csv,
             file_name=f"{client_name.replace(' ', '_')}_simulation_data.csv",
-            mime="text/csv"
+            mime="text/csv",
+            help="Export raw simulation data (all Monte Carlo iterations) for detailed statistical analysis in Excel or other tools."
         )
     
     with col3:
@@ -663,7 +795,8 @@ Generated by BARE Cybersecurity FAIR Analysis Tool
             label="📝 Download Report",
             data=report,
             file_name=f"{client_name.replace(' ', '_')}_fair_report.txt",
-            mime="text/plain"
+            mime="text/plain",
+            help="Export a formatted text report summarizing key risk metrics and simulation parameters for documentation and presentation."
         )
 
 # Footer
